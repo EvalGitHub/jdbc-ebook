@@ -1,0 +1,36 @@
+<section class="chapter" id="chapter-7" data-chapter="7">
+  <h1>六、常见问题</h1>
+  <div class="chapter-content">
+<h4 id="61">6.1 资源的管理</h4>
+<blockquote>
+<p>在使用JDBC的相关资源时，比如Connection、PreparedStatement、ResultSet，使用完毕后，要及时关闭这些资源以释放数据库服务器资源和避免内存泄漏是很重要的。</p>
+</blockquote>
+<h4 id="62-sql">6.2 SQL语句问题</h4>
+<blockquote>
+<p>java.sql.SQLSyntaxErrorException：SQL语句错误异常，一般有几种可能：</p>
+<ol>
+<li>SQL语句有错误，检查SQL语句！建议SQL语句在SQL工具中测试后再复制到Java程序中！</li>
+<li>连接数据库的URL中，数据库名称编写错误，也会报该异常！</li>
+</ol>
+<p><img alt="image-20240223143826507" src="assets/images/image-20240223143826507.png" /></p>
+</blockquote>
+<h4 id="63-sql">6.3 SQL语句未设置参数问题</h4>
+<blockquote>
+<p>java.sql.SQLException：No value specified for parameter 1</p>
+<p>在使用预编译SQL语句时，如果有?占位符，要为每一个占位符赋值，否则报该错误！</p>
+<p><img alt="image-20240223143947558" src="assets/images/image-20240223143947558.png" /></p>
+</blockquote>
+<h4 id="64">6.4 用户名或密码错误问题</h4>
+<blockquote>
+<p>连接数据库时，如果用户名或密码输入错误，也会报SQLException，容易混淆！所以一定要看清楚异常后面的原因描述</p>
+<p><img alt="image-20240223144345939" src="assets/images/image-20240223144345939.png" /></p>
+</blockquote>
+<h4 id="65">6.5 通信异常</h4>
+<blockquote>
+<p>在连接数据库的URL中，如果IP或端口写错了，会报如下异常：</p>
+<p>com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure</p>
+<p><img alt="image-20240227234754309" src="F:\JDBC\JDBC\JDBC\笔记\JDBC.assets\image-20240227234754309.png" /></p>
+</blockquote>
+<h2 id="_1">进阶篇</h2>
+  </div>
+</section>
