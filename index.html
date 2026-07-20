@@ -107,34 +107,80 @@ body {
   min-height: 18px;
 }
 
+/* Hierarchical TOC */
 .toc {
   padding: 10px 0;
 }
 
-.toc ul {
+.toc > ul {
   list-style: none;
 }
 
-.toc li {
-  margin: 0;
+.toc-section {
+  margin-bottom: 2px;
 }
 
-.toc a {
-  display: block;
-  padding: 8px 20px;
-  color: var(--text);
-  text-decoration: none;
+.toc-section-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
   font-size: 14px;
+  font-weight: 600;
+  color: var(--heading-color);
+  background: rgba(0,0,0,0.02);
   border-left: 3px solid transparent;
   transition: all 0.2s;
 }
 
-.toc a:hover {
+.toc-section-header:hover {
+  background: rgba(26, 115, 232, 0.06);
+}
+
+.toc-arrow {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.toc-section.expanded > .toc-section-header .toc-arrow {
+  transform: rotate(90deg);
+}
+
+.toc-section-title {
+  flex: 1;
+}
+
+.toc-children {
+  list-style: none;
+  display: none;
+  padding: 0;
+}
+
+.toc-section.expanded > .toc-children {
+  display: block;
+}
+
+.toc-children a {
+  display: block;
+  padding: 6px 16px 6px 36px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.toc-children a:hover {
   background: rgba(26, 115, 232, 0.08);
   color: var(--primary);
 }
 
-.toc a.active {
+.toc-children a.active {
   color: var(--primary);
   border-left-color: var(--primary);
   background: rgba(26, 115, 232, 0.08);
@@ -375,7 +421,7 @@ body {
 </head>
 <body>
 
-<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
 
 <nav class="sidebar">
   <div class="sidebar-header">
@@ -392,18 +438,41 @@ body {
   </div>
   <div class="toc" id="tocPanel">
     <ul id="tocList">
-      <li><a href="#chapter-1" data-chapter="1">引言</a></li>
-<li><a href="#chapter-2" data-chapter="2">一、引言</a></li>
-<li><a href="#chapter-3" data-chapter="3">二、JDBC</a></li>
-<li><a href="#chapter-4" data-chapter="4">三、JDBC快速入门</a></li>
-<li><a href="#chapter-5" data-chapter="5">四、核心API理解</a></li>
-<li><a href="#chapter-6" data-chapter="6">五、基于PreparedStatement实现CRUD</a></li>
-<li><a href="#chapter-7" data-chapter="7">六、常见问题</a></li>
-<li><a href="#chapter-8" data-chapter="8">七、JDBC扩展</a></li>
-<li><a href="#chapter-9" data-chapter="9">八、连接池</a></li>
-<li><a href="#chapter-10" data-chapter="10">九、JDBC优化及工具类封装</a></li>
-<li><a href="#chapter-11" data-chapter="11">十、DAO封装及BaseDAO工具类</a></li>
-<li><a href="#chapter-12" data-chapter="12">十一、事务</a></li>
+      <li class="toc-section">
+  <div class="toc-section-header" onclick="toggleSection(this)" data-section="0">
+    <span class="toc-arrow">&#9656;</span>
+    <span class="toc-section-title">基础篇</span>
+  </div>
+  <ul class="toc-children">
+    <li><a href="#chapter-1" data-chapter="1">一、引言</a></li>
+    <li><a href="#chapter-2" data-chapter="2">二、JDBC</a></li>
+    <li><a href="#chapter-3" data-chapter="3">三、JDBC快速入门</a></li>
+    <li><a href="#chapter-4" data-chapter="4">四、核心API理解</a></li>
+    <li><a href="#chapter-5" data-chapter="5">五、基于PreparedStatement实现CRUD</a></li>
+    <li><a href="#chapter-6" data-chapter="6">六、常见问题</a></li>
+  </ul>
+</li>
+<li class="toc-section">
+  <div class="toc-section-header" onclick="toggleSection(this)" data-section="1">
+    <span class="toc-arrow">&#9656;</span>
+    <span class="toc-section-title">进阶篇</span>
+  </div>
+  <ul class="toc-children">
+    <li><a href="#chapter-7" data-chapter="7">七、JDBC扩展</a></li>
+    <li><a href="#chapter-8" data-chapter="8">八、连接池</a></li>
+  </ul>
+</li>
+<li class="toc-section">
+  <div class="toc-section-header" onclick="toggleSection(this)" data-section="2">
+    <span class="toc-arrow">&#9656;</span>
+    <span class="toc-section-title">高级篇</span>
+  </div>
+  <ul class="toc-children">
+    <li><a href="#chapter-9" data-chapter="9">九、JDBC优化及工具类封装</a></li>
+    <li><a href="#chapter-10" data-chapter="10">十、DAO封装及BaseDAO工具类</a></li>
+    <li><a href="#chapter-11" data-chapter="11">十一、事务</a></li>
+  </ul>
+</li>
     </ul>
   </div>
   <div class="search-results" id="searchResultsPanel" style="display:none;">
@@ -417,7 +486,7 @@ body {
 
 <script>
 const contentEl = document.getElementById('content');
-const tocLinks = document.querySelectorAll('.toc a');
+const tocLinks = document.querySelectorAll('.toc-children a');
 const searchInput = document.getElementById('searchInput');
 const searchStatus = document.getElementById('searchStatus');
 const tocPanel = document.getElementById('tocPanel');
@@ -429,6 +498,11 @@ let searchMode = 'toc';
 let searchIndex = null;
 let searchIndexLoading = false;
 let searchDebounceTimer = null;
+
+function toggleSection(headerEl) {
+  const section = headerEl.parentElement;
+  section.classList.toggle('expanded');
+}
 
 function setSearchMode(mode) {
   searchMode = mode;
@@ -448,11 +522,27 @@ function setSearchMode(mode) {
 }
 
 function filterTOC(query) {
-  const items = document.querySelectorAll('#tocList li');
   const q = query.toLowerCase().trim();
-  items.forEach(li => {
-    const text = li.textContent.toLowerCase();
-    li.style.display = text.includes(q) ? '' : 'none';
+  const sections = document.querySelectorAll('#tocList > li.toc-section');
+  sections.forEach(section => {
+    const children = section.querySelectorAll('.toc-children li');
+    const sectionTitle = section.querySelector('.toc-section-title').textContent.toLowerCase();
+    let anyChildMatch = false;
+    children.forEach(li => {
+      const text = li.textContent.toLowerCase();
+      const match = text.includes(q);
+      li.style.display = match ? '' : 'none';
+      if (match) anyChildMatch = true;
+    });
+    const sectionMatch = sectionTitle.includes(q);
+    if (sectionMatch || anyChildMatch || !q) {
+      section.style.display = '';
+      if (q && (sectionMatch || anyChildMatch)) {
+        section.classList.add('expanded');
+      }
+    } else {
+      section.style.display = 'none';
+    }
   });
 }
 
@@ -480,7 +570,7 @@ async function loadSearchIndex() {
 function highlightTerms(text, terms) {
   let result = text;
   for (const term of terms) {
-    const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\]]/g, '\\$&') + ')', 'gi');
+    const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]]/g, '\\$&') + ')', 'gi');
     result = result.replace(re, '<mark>$1</mark>');
   }
   return result;
@@ -579,6 +669,12 @@ function setActiveChapter(num) {
   tocLinks.forEach(link => {
     link.classList.toggle('active', link.dataset.chapter === String(num));
   });
+  // Auto-expand parent section
+  const activeLink = document.querySelector('.toc-children a.active');
+  if (activeLink) {
+    const parentSection = activeLink.closest('.toc-section');
+    if (parentSection) parentSection.classList.add('expanded');
+  }
 }
 
 function chapterUrl(num) {
@@ -588,7 +684,7 @@ function chapterUrl(num) {
 function getInitialChapterNum() {
   const match = location.hash.match(/^#chapter-(\d+)$/);
   if (match) return parseInt(match[1], 10);
-  const first = document.querySelector('.toc a');
+  const first = document.querySelector('.toc-children a');
   return first ? parseInt(first.dataset.chapter, 10) : null;
 }
 
@@ -624,6 +720,10 @@ window.addEventListener('hashchange', () => {
   const num = getInitialChapterNum();
   if (num) loadChapter(num);
 });
+
+// Expand first section by default
+const firstSection = document.querySelector('.toc-section');
+if (firstSection) firstSection.classList.add('expanded');
 
 // Load initial chapter
 loadChapter(getInitialChapterNum());

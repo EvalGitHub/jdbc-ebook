@@ -1,7 +1,41 @@
 <section class="chapter" id="chapter-1" data-chapter="1">
-  <h1>引言</h1>
+  <h1>一、引言</h1>
   <div class="chapter-content">
-<h1 id="java8xjdk21jdbc">尚硅谷Java技术之8.x数据库+JDK21版JDBC数据库连接技术</h1>
-<h2 id="_1">基础篇</h2>
+<h4 id="11">1.1 数据的存储</h4>
+<blockquote>
+<p>我们在开发Java程序时，数据都是存储在内存中，属于临时存储，当程序停止或重启时，内存中的数据就丢失了！我们为了解决数据的长期存储问题，有如下解决方案：</p>
+<ol>
+<li>数据通过I/O流技术，存储在本地磁盘中，解决了持久化问题，但是没有结构和逻辑，不方便管理和维护。</li>
+<li>通过关系型数据库，将数据按照特定的格式交由数据库管理系统维护。关系型数据库是通过库和表分隔不同的数据，表中数据存储的方式是行和列，区分相同格式不同值的数据。</li>
+</ol>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">数据库存储数据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="image-20240221133238015" src="assets/images/image-20240221133238015.png" /></td>
+</tr>
+</tbody>
+</table>
+<h4 id="12">1.2 数据的操作</h4>
+<blockquote>
+<p>数据存储在数据库，仅仅解决了我们数据存储的问题，但当我们程序运行时，需要读取数据，以及对数据做增删改的操作，那么我们如何通过Java程序对数据库中的数据做增删改查呢？</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Java程序读取数据库</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="image-20240221133525927" src="assets/images/image-20240221133525927.png" /></td>
+</tr>
+</tbody>
+</table>
   </div>
 </section>

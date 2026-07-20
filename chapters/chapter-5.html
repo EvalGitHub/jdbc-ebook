@@ -1,53 +1,192 @@
 <section class="chapter" id="chapter-5" data-chapter="5">
-  <h1>四、核心API理解</h1>
+  <h1>五、基于PreparedStatement实现CRUD</h1>
   <div class="chapter-content">
-<h4 id="41">4.1 注册驱动</h4>
-<ul>
-<li>
-<p><code>java
-  Class.forName("com.mysql.cj.jdbc.Driver");</code></p>
-</li>
-<li>
-<p>在 Java 中，当使用 JDBC（Java Database Connectivity）连接数据库时，需要加载数据库特定的驱动程序，以便与数据库进行通信。加载驱动程序的目的是为了注册驱动程序，使得 JDBC API 能够识别并与特定的数据库进行交互。</p>
-</li>
-<li>
-<p>从JDK6开始，不再需要显式地调用 <code>Class.forName()</code> 来加载 JDBC 驱动程序，只要在类路径中集成了对应的jar文件，会自动在初始化时注册驱动程序。</p>
-</li>
-</ul>
-<h4 id="42-connection">4.2 Connection</h4>
-<ul>
-<li>Connection接口是JDBC API的重要接口，用于建立与数据库的通信通道。换而言之，Connection对象不为空，则代表一次数据库连接。</li>
-<li>在建立连接时，需要指定数据库URL、用户名、密码参数。</li>
-<li>URL：jdbc:mysql://localhost:3306/atguigu<ul>
-<li>jdbc:mysql://IP地址:端口号/数据库名称?参数键值对1&amp;参数键值对2</li>
-</ul>
-</li>
-<li><code>Connection</code> 接口还负责管理事务，<code>Connection</code> 接口提供了 <code>commit</code> 和 <code>rollback</code> 方法，用于提交事务和回滚事务。</li>
-<li>可以创建 <code>Statement</code> 对象，用于执行 SQL 语句并与数据库进行交互。</li>
-<li>在使用JDBC技术时，必须要先获取Connection对象，在使用完毕后，要释放资源，避免资源占用浪费及泄漏。</li>
-</ul>
-<h4 id="43-statement">4.3 Statement</h4>
-<ul>
-<li><code>Statement</code> 接口用于执行 SQL 语句并与数据库进行交互。它是 JDBC API 中的一个重要接口。通过 <code>Statement</code> 对象，可以向数据库发送 SQL 语句并获取执行结果。</li>
-<li>结果可以是一个或多个结果。</li>
-<li>增删改：受影响行数单个结果。</li>
-<li>查询：单行单列、多行多列、单行多列等结果。</li>
-<li>但是<code>Statement</code> 接口在执行SQL语句时，会产生<code>SQL注入攻击问题</code>:</li>
-<li>当使用 <code>Statement</code> 执行动态构建的 SQL 查询时，往往需要将查询条件与 SQL 语句拼接在一起，直接将参数和SQL语句一并生成，让SQL的查询条件始终为true得到结果。</li>
-</ul>
-<h4 id="44-preparedstatement">4.4 PreparedStatement</h4>
-<ul>
-<li><code>PreparedStatement</code>是 <code>Statement</code> 接口的子接口，用于执行<code>预编译</code>的 SQL 查询，作用如下：</li>
-<li>预编译SQL语句：在创建PreparedStatement时，就会预编译SQL语句，也就是SQL语句已经固定。</li>
-<li>防止SQL注入：<code>PreparedStatement</code> 支持参数化查询，将数据作为参数传递到SQL语句中，采用?占位符的方式，将传入的参数用一对单引号包裹起来''，无论传递什么都作为值。有效防止传入关键字或值导致SQL注入问题。</li>
-<li>性能提升：PreparedStatement是预编译SQL语句，同一SQL语句多次执行的情况下，可以复用，不必每次重新编译和解析。</li>
-<li>后续的学习我们都是基于PreparedStatement进行实现，更安全、效率更高！</li>
-</ul>
-<h4 id="45-resultset">4.5 ResultSet</h4>
-<ul>
-<li><code>ResultSet</code>是 JDBC API 中的一个接口，用于表示从数据库中<code>执行查询语句所返回的结果集</code>。它提供了一种用于遍历和访问查询结果的方式。</li>
-<li>遍历结果：ResultSet可以使用 <code>next()</code> 方法将游标移动到结果集的下一行，逐行遍历数据库查询的结果，返回值为boolean类型，true代表有下一行结果，false则代表没有。</li>
-<li>获取单列结果：可以通过getXxx的方法获取单列的数据，该方法为重载方法，支持索引和列名进行获取。</li>
-</ul>
+<h4 id="51">5.1 查询单行单列</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">querySingleRowAndColumn</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建PreparedStatement对象，并预编译SQL语句</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;select count(*) as count from t_emp&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.执行SQL语句，获取结果</span>
+<span class="w">        </span><span class="n">ResultSet</span><span class="w"> </span><span class="n">resultSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeQuery</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">resultSet</span><span class="p">.</span><span class="na">next</span><span class="p">()){</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;count&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;count = &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">count</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">resultSet</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<h4 id="52">5.2 查询单行多列</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">querySingleRow</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建PreparedStatement对象，并预编译SQL语句，使用?占位符</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;select emp_id,emp_name,emp_salary,emp_age from t_emp where emp_id = ?&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.为占位符赋值，索引从1开始，执行SQL语句，获取结果</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setInt</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ResultSet</span><span class="w"> </span><span class="n">resultSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeQuery</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">resultSet</span><span class="p">.</span><span class="na">next</span><span class="p">()){</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">empId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;emp_id&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">empName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;emp_name&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">empSalary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;emp_salary&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">empAge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;emp_age&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">empId</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empName</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empSalary</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empAge</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">resultSet</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<h4 id="53">5.3 查询多行多列</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">queryMoreRow</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建Statement对象</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;select emp_id,emp_name,emp_salary,emp_age from t_emp&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.编写SQL语句并执行，获取结果</span>
+<span class="w">        </span><span class="n">ResultSet</span><span class="w"> </span><span class="n">resultSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeQuery</span><span class="p">();</span>
+
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">resultSet</span><span class="p">.</span><span class="na">next</span><span class="p">()){</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">empId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;emp_id&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">empName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;emp_name&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">empSalary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="s">&quot;emp_salary&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">empAge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="s">&quot;emp_age&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">empId</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empName</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empSalary</span><span class="o">+</span><span class="s">&quot;\t&quot;</span><span class="o">+</span><span class="n">empAge</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">resultSet</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<h4 id="54">5.4 新增</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">insert</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建Statement对象</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;insert into t_emp (emp_name,emp_salary,emp_age)values  (?, ?,?)&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.为占位符赋值，索引从1开始，编写SQL语句并执行，获取结果</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;rose&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mf">666.66</span><span class="p">);</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">28</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;添加成功&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="k">else</span><span class="p">{</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;添加失败&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<h4 id="55">5.5 修改</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">update</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建Statement对象</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;update t_emp set emp_salary = ? where emp_id = ?&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.为占位符赋值，索引从1开始，编写SQL语句并执行，获取结果</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">888.88</span><span class="p">);</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;修改成功&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="k">else</span><span class="p">{</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;修改失败&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<h4 id="56">5.6 删除</h4>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">delete</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+
+<span class="w">        </span><span class="c1">//2.获取数据库连接</span>
+<span class="w">        </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//3.创建Statement对象</span>
+<span class="w">        </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;delete from t_emp where emp_id = ?&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">//4.为占位符赋值，索引从1开始，编写SQL语句并执行，获取结果</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">setInt</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//5.处理结果</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;删除成功&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="k">else</span><span class="p">{</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;删除失败&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//6.释放资源(先开后关原则)</span>
+<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
   </div>
 </section>
