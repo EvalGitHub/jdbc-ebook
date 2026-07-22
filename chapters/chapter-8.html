@@ -72,93 +72,86 @@
 </li>
 <li>
 <p>硬编码方式（了解）：</p>
-<ul>
-<li>```java
-  @Test
-      public void testHardCodeDruid() throws SQLException {
-          /<em>
-              硬编码：将连接池的配置信息和Java代码耦合在一起。
-              1、创建DruidDataSource连接池对象。
-              2、设置连接池的配置信息【必须 | 非必须】
-              3、通过连接池获取连接对象
-              4、回收连接【不是释放连接，而是将连接归还给连接池，给其他线程进行复用】
-           </em>/<div class="codehilite"><pre><span></span><code><span class="w">  </span><span class="c1">//1.创建DruidDataSource连接池对象。</span>
-<span class="w">  </span><span class="n">DruidDataSource</span><span class="w"> </span><span class="n">druidDataSource</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">DruidDataSource</span><span class="p">();</span>
-
-<span class="w">  </span><span class="c1">//2.设置连接池的配置信息【必须 | 非必须】</span>
-<span class="w">  </span><span class="c1">//2.1 必须设置的配置</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setDriverClassName</span><span class="p">(</span><span class="s">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="p">);</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setUrl</span><span class="p">(</span><span class="s">&quot;jdbc:mysql:///atguigu&quot;</span><span class="p">);</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setUsername</span><span class="p">(</span><span class="s">&quot;root&quot;</span><span class="p">);</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setPassword</span><span class="p">(</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
-
-<span class="w">  </span><span class="c1">//2.2 非必须设置的配置</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setInitialSize</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
-<span class="w">  </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">setMaxActive</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
-
-<span class="w">  </span><span class="c1">//3.通过连接池获取连接对象</span>
-<span class="w">  </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">druidDataSource</span><span class="p">.</span><span class="n">getConnection</span><span class="p">();</span>
-<span class="w">  </span><span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">connection</span><span class="p">);</span>
-
-<span class="w">  </span><span class="c1">//基于connection进行CRUD</span>
-
-<span class="w">  </span><span class="c1">//4.回收连接</span>
-<span class="w">  </span><span class="n">connection</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
-</code></pre></div>
-
-<p>}
-      ```</p>
 </li>
 </ul>
-</li>
-<li>
-<p>软编码方式（推荐）：</p>
-<ul>
-<li>
-<p>在项目目录下创建resources文件夹，标识该文件夹为资源目录，创建db.properties配置文件，将连接信息定义在该文件中。</p>
-</li>
-<li>
-<p><code>properties
-    # druid连接池需要的配置参数，key固定命名
-    driverClassName=com.mysql.cj.jdbc.Driver
-    url=jdbc:mysql:///atguigu
-    username=root
-    password=atguigu
-    initialSize=10
-    maxActive=20</code></p>
-</li>
-<li>
-<p>Java代码：</p>
-</li>
-<li>
-<p>```java
-    @Test
-        public void testResourcesDruid() throws Exception {
-            //1.创建Properties集合，用于存储外部配置文件的key和value值。
-            Properties properties = new Properties();</p>
-<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="o">//</span><span class="mf">2.</span><span class="err">读取外部配置文件，获取输入流，加载到</span><span class="n">Properties集合里</span><span class="err">。</span>
-<span class="w">    </span><span class="n">InputStream</span><span class="w"> </span><span class="n">inputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DruidTest</span><span class="o">.</span><span class="k">class</span><span class="o">.</span><span class="n">getClassLoader</span><span class="p">()</span><span class="o">.</span><span class="n">getResourceAsStream</span><span class="p">(</span><span class="s2">&quot;db.properties&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="n">properties</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">inputStream</span><span class="p">);</span>
+<div class="codehilite"><pre><span></span><code><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testHardCodeDruid</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="cm">/*</span>
+<span class="cm">硬编码：将连接池的配置信息和Java代码耦合在一起。</span>
+<span class="cm">1、创建DruidDataSource连接池对象。</span>
+<span class="cm">2、设置连接池的配置信息【必须 | 非必须】</span>
+<span class="cm">3、通过连接池获取连接对象</span>
+<span class="cm">4、回收连接【不是释放连接，而是将连接归还给连接池，给其他线程进行复用】</span>
+<span class="cm">*/</span>
 
-<span class="w">    </span><span class="o">//</span><span class="mf">3.</span><span class="err">基于</span><span class="n">Properties集合构建DruidDataSource连接池</span>
-<span class="w">    </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DruidDataSourceFactory</span><span class="o">.</span><span class="n">createDataSource</span><span class="p">(</span><span class="n">properties</span><span class="p">);</span>
+<span class="c1">//1.创建DruidDataSource连接池对象。</span>
+<span class="n">DruidDataSource</span><span class="w"> </span><span class="n">druidDataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DruidDataSource</span><span class="p">();</span>
 
-<span class="w">    </span><span class="o">//</span><span class="mf">4.</span><span class="err">通过连接池获取连接对象</span>
-<span class="w">    </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dataSource</span><span class="o">.</span><span class="n">getConnection</span><span class="p">();</span>
-<span class="w">    </span><span class="n">System</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">println</span><span class="p">(</span><span class="n">connection</span><span class="p">);</span>
+<span class="c1">//2.设置连接池的配置信息【必须 | 非必须】</span>
+<span class="c1">//2.1 必须设置的配置</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setDriverClassName</span><span class="p">(</span><span class="s">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="p">);</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setUrl</span><span class="p">(</span><span class="s">&quot;jdbc:mysql:///atguigu&quot;</span><span class="p">);</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setUsername</span><span class="p">(</span><span class="s">&quot;root&quot;</span><span class="p">);</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setPassword</span><span class="p">(</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
 
-<span class="w">    </span><span class="o">//</span><span class="mf">5.</span><span class="err">开发</span><span class="n">CRUD</span>
+<span class="c1">//2.2 非必须设置的配置</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setInitialSize</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="n">druidDataSource</span><span class="p">.</span><span class="na">setMaxActive</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
 
-<span class="w">    </span><span class="o">//</span><span class="mf">6.</span><span class="err">回收连接</span>
-<span class="w">    </span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">();</span>
+<span class="c1">//3.通过连接池获取连接对象</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">druidDataSource</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">connection</span><span class="p">);</span>
+
+<span class="c1">//基于connection进行CRUD</span>
+
+<span class="c1">//4.回收连接</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<p>```</p>
-</li>
+<ul>
+<li>
+<p>软编码方式（推荐）：</p>
+<ul>
+<li>在项目目录下创建resources文件夹，标识该文件夹为资源目录，创建db.properties配置文件，将连接信息定义在该文件中。</li>
 </ul>
 </li>
 </ul>
+<div class="codehilite"><pre><span></span><code><span class="c1"># druid连接池需要的配置参数，key固定命名</span>
+<span class="na">driverClassName</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.Driver</span>
+<span class="na">url</span><span class="o">=</span><span class="s">jdbc:mysql:///atguigu</span>
+<span class="na">username</span><span class="o">=</span><span class="s">root</span>
+<span class="na">password</span><span class="o">=</span><span class="s">atguigu</span>
+<span class="na">initialSize</span><span class="o">=</span><span class="s">10</span>
+<span class="na">maxActive</span><span class="o">=</span><span class="s">20</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>- Java代码：
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testResourcesDruid</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">//1.创建Properties集合，用于存储外部配置文件的key和value值。</span>
+<span class="n">Properties</span><span class="w"> </span><span class="n">properties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Properties</span><span class="p">();</span>
+
+<span class="c1">//2.读取外部配置文件，获取输入流，加载到Properties集合里。</span>
+<span class="n">InputStream</span><span class="w"> </span><span class="n">inputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DruidTest</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">getClassLoader</span><span class="p">().</span><span class="na">getResourceAsStream</span><span class="p">(</span><span class="s">&quot;db.properties&quot;</span><span class="p">);</span>
+<span class="n">properties</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">inputStream</span><span class="p">);</span>
+
+<span class="c1">//3.基于Properties集合构建DruidDataSource连接池</span>
+<span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DruidDataSourceFactory</span><span class="p">.</span><span class="na">createDataSource</span><span class="p">(</span><span class="n">properties</span><span class="p">);</span>
+
+<span class="c1">//4.通过连接池获取连接对象</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dataSource</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">connection</span><span class="p">);</span>
+
+<span class="c1">//5.开发CRUD</span>
+
+<span class="c1">//6.回收连接</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+
 <h4 id="85-druid">8.5 Druid其他配置【了解】</h4>
 <table>
 <thead>
@@ -296,88 +289,85 @@
 </li>
 <li>
 <p>硬编码方式：</p>
-<ul>
-<li>
-<p>```java
-  @Test
-  public void testHardCodeHikari() throws SQLException {
-      /<em>
-       硬编码：将连接池的配置信息和Java代码耦合在一起。
-       1、创建HikariDataSource连接池对象
-       2、设置连接池的配置信息【必须 ｜ 非必须】
-       3、通过连接池获取连接对象
-       4、回收连接
-       </em>/
-      //1.创建HikariDataSource连接池对象
-      HikariDataSource hikariDataSource = new HikariDataSource();</p>
-<p>//2.设置连接池的配置信息【必须 ｜ 非必须】
-  //2.1必须设置的配置
-  hikariDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-  hikariDataSource.setJdbcUrl("jdbc:mysql:///atguigu");
-  hikariDataSource.setUsername("root");
-  hikariDataSource.setPassword("atguigu");</p>
-<p>//2.2 非必须设置的配置
-  hikariDataSource.setMinimumIdle(10);
-  hikariDataSource.setMaximumPoolSize(20);</p>
-<p>//3.通过连接池获取连接对象
-  Connection connection = hikariDataSource.getConnection();</p>
-<p>System.out.println(connection);</p>
-<p>//回收连接
-  connection.close();
-      }
-      ```</p>
 </li>
 </ul>
-</li>
-<li>
-<p>软编码方式：</p>
-<ul>
-<li>
-<p>在项目下创建resources/hikari.properties配置文件</p>
-</li>
-<li>
-<p><code>properties
-    driverClassName=com.mysql.cj.jdbc.Driver
-    jdbcUrl=jdbc:mysql:///atguigu
-    username=root
-    password=atguigu
-    minimumIdle=10
-    maximumPoolSize=20</code></p>
-</li>
-<li>
-<p>编写代码：</p>
-</li>
-<li>
-<p>```java
-        @Test
-        public void testResourcesHikari()throws Exception{
-             //1.创建Properties集合，用于存储外部配置文件的key和value值。
-            Properties properties = new Properties();</p>
-<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="o">//</span><span class="mf">2.</span><span class="err">读取外部配置文件，获取输入流，加载到</span><span class="n">Properties集合里</span><span class="err">。</span>
-<span class="w">    </span><span class="n">InputStream</span><span class="w"> </span><span class="n">inputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HikariTest</span><span class="o">.</span><span class="k">class</span><span class="o">.</span><span class="n">getClassLoader</span><span class="p">()</span><span class="o">.</span><span class="n">getResourceAsStream</span><span class="p">(</span><span class="s2">&quot;db.properties&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="n">properties</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">inputStream</span><span class="p">);</span>
+<div class="codehilite"><pre><span></span><code><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testHardCodeHikari</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="cm">/*</span>
+<span class="cm">硬编码：将连接池的配置信息和Java代码耦合在一起。</span>
+<span class="cm">1、创建HikariDataSource连接池对象</span>
+<span class="cm">2、设置连接池的配置信息【必须 ｜ 非必须】</span>
+<span class="cm">3、通过连接池获取连接对象</span>
+<span class="cm">4、回收连接</span>
+<span class="cm">*/</span>
+<span class="c1">//1.创建HikariDataSource连接池对象</span>
+<span class="n">HikariDataSource</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HikariDataSource</span><span class="p">();</span>
 
-<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="mf">3.</span><span class="err">创建</span><span class="n">Hikari连接池配置对象</span><span class="err">，将</span><span class="n">Properties集合传进去</span>
-<span class="w">    </span><span class="n">HikariConfig</span><span class="w"> </span><span class="n">hikariConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">HikariConfig</span><span class="p">(</span><span class="n">properties</span><span class="p">);</span>
+<span class="c1">//2.设置连接池的配置信息【必须 ｜ 非必须】</span>
+<span class="c1">//2.1必须设置的配置</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setDriverClassName</span><span class="p">(</span><span class="s">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="p">);</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setJdbcUrl</span><span class="p">(</span><span class="s">&quot;jdbc:mysql:///atguigu&quot;</span><span class="p">);</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setUsername</span><span class="p">(</span><span class="s">&quot;root&quot;</span><span class="p">);</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setPassword</span><span class="p">(</span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
 
-<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="mf">4.</span><span class="w"> </span><span class="err">基于</span><span class="n">Hikari配置对象</span><span class="err">，构建连接池</span>
-<span class="w">    </span><span class="n">HikariDataSource</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">HikariDataSource</span><span class="p">(</span><span class="n">hikariConfig</span><span class="p">);</span>
+<span class="c1">//2.2 非必须设置的配置</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setMinimumIdle</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="n">hikariDataSource</span><span class="p">.</span><span class="na">setMaximumPoolSize</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
 
-<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="mf">5.</span><span class="w"> </span><span class="err">获取连接</span>
-<span class="w">    </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="o">.</span><span class="n">getConnection</span><span class="p">();</span>
-<span class="w">    </span><span class="n">System</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">println</span><span class="p">(</span><span class="s2">&quot;connection = &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">connection</span><span class="p">);</span>
+<span class="c1">//3.通过连接池获取连接对象</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
 
-<span class="w">    </span><span class="o">//</span><span class="mf">6.</span><span class="err">回收连接</span>
-<span class="w">    </span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">connection</span><span class="p">);</span>
+
+<span class="c1">//回收连接</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<p>}
-```</p>
-</li>
+<ul>
+<li>
+<p>软编码方式：</p>
+<ul>
+<li>在项目下创建resources/hikari.properties配置文件</li>
 </ul>
 </li>
 </ul>
+<div class="codehilite"><pre><span></span><code><span class="na">driverClassName</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.Driver</span>
+<span class="na">jdbcUrl</span><span class="o">=</span><span class="s">jdbc:mysql:///atguigu</span>
+<span class="na">username</span><span class="o">=</span><span class="s">root</span>
+<span class="na">password</span><span class="o">=</span><span class="s">atguigu</span>
+<span class="na">minimumIdle</span><span class="o">=</span><span class="s">10</span>
+<span class="na">maximumPoolSize</span><span class="o">=</span><span class="s">20</span>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>- 编写代码：
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testResourcesHikari</span><span class="p">()</span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="p">{</span>
+<span class="c1">//1.创建Properties集合，用于存储外部配置文件的key和value值。</span>
+<span class="n">Properties</span><span class="w"> </span><span class="n">properties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Properties</span><span class="p">();</span>
+
+<span class="c1">//2.读取外部配置文件，获取输入流，加载到Properties集合里。</span>
+<span class="n">InputStream</span><span class="w"> </span><span class="n">inputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HikariTest</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">getClassLoader</span><span class="p">().</span><span class="na">getResourceAsStream</span><span class="p">(</span><span class="s">&quot;db.properties&quot;</span><span class="p">);</span>
+<span class="n">properties</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">inputStream</span><span class="p">);</span>
+
+<span class="c1">// 3.创建Hikari连接池配置对象，将Properties集合传进去</span>
+<span class="n">HikariConfig</span><span class="w"> </span><span class="n">hikariConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HikariConfig</span><span class="p">(</span><span class="n">properties</span><span class="p">);</span>
+
+<span class="c1">// 4. 基于Hikari配置对象，构建连接池</span>
+<span class="n">HikariDataSource</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HikariDataSource</span><span class="p">(</span><span class="n">hikariConfig</span><span class="p">);</span>
+
+<span class="c1">// 5. 获取连接</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hikariDataSource</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;connection = &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">connection</span><span class="p">);</span>
+
+<span class="c1">//6.回收连接</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
 <h4 id="87-hikaricp">8.7 HikariCP其他配置【了解】</h4>
 <table>
 <thead>

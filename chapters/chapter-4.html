@@ -2,11 +2,10 @@
   <h1>四、核心API理解</h1>
   <div class="chapter-content">
 <h4 id="41">4.1 注册驱动</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">Class</span><span class="p">.</span><span class="na">forName</span><span class="p">(</span><span class="s">&quot;com.mysql.cj.jdbc.Driver&quot;</span><span class="p">);</span>
+</code></pre></div>
+
 <ul>
-<li>
-<p><code>java
-  Class.forName("com.mysql.cj.jdbc.Driver");</code></p>
-</li>
 <li>
 <p>在 Java 中，当使用 JDBC（Java Database Connectivity）连接数据库时，需要加载数据库特定的驱动程序，以便与数据库进行通信。加载驱动程序的目的是为了注册驱动程序，使得 JDBC API 能够识别并与特定的数据库进行交互。</p>
 </li>

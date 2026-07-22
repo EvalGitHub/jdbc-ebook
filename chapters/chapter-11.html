@@ -19,122 +19,107 @@
 </ul>
 <h4 id="112-jdbc">11.2 JDBC中事务实现</h4>
 <ul>
-<li>
-<p>关键代码：</p>
-</li>
-<li>
-<p>```java
-    try{
-        connection.setAutoCommit(false); //关闭自动提交了
-        //connection.setAutoCommit(false)也就类型于SET autocommit = off</p>
-<div class="codehilite"><pre><span></span><code><span class="c1">//注意，只要当前connection对象，进行数据库操作，都不会自动提交事务</span>
+<li>关键代码：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="k">try</span><span class="p">{</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">setAutoCommit</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span><span class="w"> </span><span class="c1">//关闭自动提交了</span>
+<span class="c1">//connection.setAutoCommit(false)也就类型于SET autocommit = off</span>
+
+<span class="c1">//注意，只要当前connection对象，进行数据库操作，都不会自动提交事务</span>
 <span class="c1">//数据库动作!</span>
 <span class="c1">//prepareStatement - 单一的数据库动作 c r u d </span>
-<span class="c1">//connection - 操作事务</span>
+<span class="c1">//connection - 操作事务 </span>
 
 <span class="c1">//所有操作执行正确，提交事务！</span>
-<span class="n">connection</span><span class="p">.</span><span class="n">commit</span><span class="p">();</span>
-</code></pre></div>
-
-<p>}catch(Execption e){
-    //出现异常，则回滚事务！
-    connection.rollback();
-  }
-```</p>
-</li>
-</ul>
-<h4 id="113-jdbc">11.3  JDBC事务代码实现</h4>
-<ul>
-<li>
-<p>准备数据库表：</p>
-</li>
-<li>
-<p>```sql
-    -- 继续在atguigu的库中创建银行表
-    CREATE TABLE t_bank(
-       id INT PRIMARY KEY AUTO_INCREMENT COMMENT '账号主键',
-       account VARCHAR(20) NOT NULL UNIQUE COMMENT '账号',
-       money  INT UNSIGNED COMMENT '金额，不能为负值') ;</p>
-<p>INSERT INTO t_bank(account,money) VALUES
-  ('zhangsan',1000),('lisi',1000);</p>
-<p>```</p>
-</li>
-<li>
-<p>DAO接口代码：</p>
-</li>
-<li>
-<p>```java
-    public interface BankDao{
-        int addMoney(Integer id,Integer money);</p>
-<div class="codehilite"><pre><span></span><code>int subMoney(Integer id,Integer money);
-</code></pre></div>
-
-<p>}
-```</p>
-</li>
-<li>
-<p>DAO实现类代码：</p>
-</li>
-<li>
-<p>```java
-    public class BankDaoImpl  extends BaseDao implements BankDao{
-        public int addMoney(Integer id,Integer money){
-            try {
-                String sql = "update t_bank set money = money + ? where id = ? ";
-                return executeUpdate(sql,money,id);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }</p>
-<p>public int subMoney(Integer id,Integer money){
-        try {
-            String sql = "update t_bank set money = money - ? where id = ? ";
-            return executeUpdate(sql,money,id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-```</p>
-</li>
-<li>
-<p>测试代码：</p>
-</li>
-<li>
-<p>```java
-     @Test
-        public void testTransaction(){
-            BankDao bankDao = new BankDaoImpl();
-            Connection connection=null;
-            try {
-                //1.获取连接，将连接的事务提交改为手动提交
-                connection = JDBCUtilV2.getConnection();
-                connection.setAutoCommit(false);//开启事务，当前连接的自动提交关闭。改为手动提交！</p>
-<div class="codehilite"><pre><span></span><code><span class="w">        </span><span class="c1">//2.操作减钱</span>
-<span class="w">        </span><span class="n">bankDao</span><span class="p">.</span><span class="n">subMoney</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
-
-<span class="w">        </span><span class="nb">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-
-<span class="w">        </span><span class="c1">//3.操作加钱</span>
-<span class="w">        </span><span class="n">bankDao</span><span class="p">.</span><span class="n">addMoney</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
-
-<span class="w">        </span><span class="c1">//4.前置的多次dao操作，没有异常，提交事务！</span>
-<span class="w">        </span><span class="n">connection</span><span class="p">.</span><span class="n">commit</span><span class="p">();</span>
-<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">connection</span><span class="p">.</span><span class="n">rollback</span><span class="p">();</span>
-<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">ex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">throw</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span><span class="n">finally</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">JDBCUtilV2</span><span class="p">.</span><span class="n">release</span><span class="p">();</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">commit</span><span class="p">();</span>
+<span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="n">Execption</span><span class="w"> </span><span class="n">e</span><span class="p">){</span>
+<span class="c1">//出现异常，则回滚事务！</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">rollback</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<p>```</p>
-</li>
+<h4 id="113-jdbc">11.3  JDBC事务代码实现</h4>
+<ul>
+<li>准备数据库表：</li>
 </ul>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- 继续在atguigu的库中创建银行表</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">t_bank</span><span class="p">(</span>
+<span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="s1">&#39;账号主键&#39;</span><span class="p">,</span>
+<span class="n">account</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="s1">&#39;账号&#39;</span><span class="p">,</span>
+<span class="n">money</span><span class="w">  </span><span class="nb">INT</span><span class="w"> </span><span class="n">UNSIGNED</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="s1">&#39;金额，不能为负值&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">;</span>
+
+<span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">t_bank</span><span class="p">(</span><span class="n">account</span><span class="p">,</span><span class="n">money</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span>
+<span class="p">(</span><span class="s1">&#39;zhangsan&#39;</span><span class="p">,</span><span class="mi">1000</span><span class="p">),(</span><span class="s1">&#39;lisi&#39;</span><span class="p">,</span><span class="mi">1000</span><span class="p">);</span>
+</code></pre></div>
+
+<ul>
+<li>DAO接口代码：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">BankDao</span><span class="p">{</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">addMoney</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="n">Integer</span><span class="w"> </span><span class="n">money</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">subMoney</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="n">Integer</span><span class="w"> </span><span class="n">money</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul>
+<li>DAO实现类代码：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BankDaoImpl</span><span class="w">  </span><span class="kd">extends</span><span class="w"> </span><span class="n">BaseDao</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">BankDao</span><span class="p">{</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">addMoney</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="n">Integer</span><span class="w"> </span><span class="n">money</span><span class="p">){</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="n">String</span><span class="w"> </span><span class="n">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;update t_bank set money = money + ? where id = ? &quot;</span><span class="p">;</span>
+<span class="k">return</span><span class="w"> </span><span class="n">executeUpdate</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="n">money</span><span class="p">,</span><span class="n">id</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">SQLException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">subMoney</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="n">Integer</span><span class="w"> </span><span class="n">money</span><span class="p">){</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="n">String</span><span class="w"> </span><span class="n">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;update t_bank set money = money - ? where id = ? &quot;</span><span class="p">;</span>
+<span class="k">return</span><span class="w"> </span><span class="n">executeUpdate</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="n">money</span><span class="p">,</span><span class="n">id</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">SQLException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul>
+<li>测试代码：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testTransaction</span><span class="p">(){</span>
+<span class="n">BankDao</span><span class="w"> </span><span class="n">bankDao</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BankDaoImpl</span><span class="p">();</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="o">=</span><span class="kc">null</span><span class="p">;</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">//1.获取连接，将连接的事务提交改为手动提交</span>
+<span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JDBCUtilV2</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">setAutoCommit</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span><span class="c1">//开启事务，当前连接的自动提交关闭。改为手动提交！</span>
+
+<span class="c1">//2.操作减钱</span>
+<span class="n">bankDao</span><span class="p">.</span><span class="na">subMoney</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">//3.操作加钱</span>
+<span class="n">bankDao</span><span class="p">.</span><span class="na">addMoney</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
+
+<span class="c1">//4.前置的多次dao操作，没有异常，提交事务！</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">commit</span><span class="p">();</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">rollback</span><span class="p">();</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">ex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="p">}</span><span class="k">finally</span><span class="w"> </span><span class="p">{</span>
+<span class="n">JDBCUtilV2</span><span class="p">.</span><span class="na">release</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
 <p><strong>注意：</strong></p>
 <blockquote>
 <p>当开启事务后，切记一定要根据代码执行结果来决定是否提交或回滚！否则数据库看不到数据的操作结果！</p>

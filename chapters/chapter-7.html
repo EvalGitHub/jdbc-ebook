@@ -66,52 +66,49 @@
 <li>
 <p>代码实现：</p>
 </li>
-<li>
-<p>```java
-            @Test
-        public void testReturnPK() throws SQLException {
-            //1.注册驱动
-    //        Class.forName("com.mysql.cj.jdbc.Driver");</p>
-<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="c1">//2.获取数据库连接</span>
-<span class="w">    </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="n">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="w">        </span><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testReturnPK</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
 
-<span class="w">    </span><span class="c1">//3.创建preparedStatement对象，传入需要主键回显参数Statement.RETURN_GENERATED_KEYS</span>
-<span class="w">    </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="n">prepareStatement</span><span class="p">(</span><span class="s">&quot;insert into t_emp (emp_name, emp_salary, emp_age)values  (?, ?,?)&quot;</span><span class="p">,</span><span class="n">Statement</span><span class="p">.</span><span class="n">RETURN_GENERATED_KEYS</span><span class="p">);</span>
+<span class="c1">//2.获取数据库连接</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql://localhost:3306/atguigu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
 
-<span class="w">    </span><span class="c1">//4.编写SQL语句并执行，获取结果</span>
-<span class="w">    </span><span class="n">Employee</span><span class="w"> </span><span class="n">employee</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">Employee</span><span class="p">(</span><span class="nb">null</span><span class="p">,</span><span class="s">&quot;rose&quot;</span><span class="p">,</span><span class="mf">666.66</span><span class="p">,</span><span class="mi">28</span><span class="p">);</span>
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="n">getEmpName</span><span class="p">());</span>
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="n">getEmpSalary</span><span class="p">());</span>
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setDouble</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="n">getEmpAge</span><span class="p">());</span>
-<span class="w">    </span><span class="nb">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">executeUpdate</span><span class="p">();</span>
+<span class="c1">//3.创建preparedStatement对象，传入需要主键回显参数Statement.RETURN_GENERATED_KEYS</span>
+<span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="s">&quot;insert into t_emp (emp_name, emp_salary, emp_age)values  (?, ?,?)&quot;</span><span class="p">,</span><span class="n">Statement</span><span class="p">.</span><span class="na">RETURN_GENERATED_KEYS</span><span class="p">);</span>
 
-<span class="w">    </span><span class="c1">//5.处理结果</span>
-<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
-<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;添加成功&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span><span class="k">else</span><span class="p">{</span>
-<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;添加失败&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="c1">//4.编写SQL语句并执行，获取结果</span>
+<span class="n">Employee</span><span class="w"> </span><span class="n">employee</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Employee</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span><span class="s">&quot;rose&quot;</span><span class="p">,</span><span class="mf">666.66</span><span class="p">,</span><span class="mi">28</span><span class="p">);</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="na">getEmpName</span><span class="p">());</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="na">getEmpSalary</span><span class="p">());</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">employee</span><span class="p">.</span><span class="na">getEmpAge</span><span class="p">());</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">();</span>
 
-<span class="w">    </span><span class="c1">//6.获取生成的主键列值，返回的是resultSet，在结果集中获取主键列值</span>
-<span class="w">    </span><span class="n">ResultSet</span><span class="w"> </span><span class="n">resultSet</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">getGeneratedKeys</span><span class="p">();</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resultSet</span><span class="p">.</span><span class="n">next</span><span class="p">()){</span>
-<span class="w">        </span><span class="nb">int</span><span class="w"> </span><span class="n">empId</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="n">getInt</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-<span class="w">        </span><span class="n">employee</span><span class="p">.</span><span class="n">setEmpId</span><span class="p">(</span><span class="n">empId</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="c1">//5.处理结果</span>
+<span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;添加成功&quot;</span><span class="p">);</span>
+<span class="p">}</span><span class="k">else</span><span class="p">{</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;添加失败&quot;</span><span class="p">);</span>
+<span class="p">}</span>
 
-<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">employee</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="c1">//6.获取生成的主键列值，返回的是resultSet，在结果集中获取主键列值</span>
+<span class="n">ResultSet</span><span class="w"> </span><span class="n">resultSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preparedStatement</span><span class="p">.</span><span class="na">getGeneratedKeys</span><span class="p">();</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resultSet</span><span class="p">.</span><span class="na">next</span><span class="p">()){</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">empId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resultSet</span><span class="p">.</span><span class="na">getInt</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="n">employee</span><span class="p">.</span><span class="na">setEmpId</span><span class="p">(</span><span class="n">empId</span><span class="p">);</span>
+<span class="p">}</span>
 
-<span class="w">    </span><span class="c1">//7.释放资源(先开后关原则)</span>
-<span class="w">    </span><span class="n">resultSet</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
-<span class="w">    </span><span class="n">connection</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">employee</span><span class="p">.</span><span class="na">toString</span><span class="p">());</span>
+
+<span class="c1">//7.释放资源(先开后关原则)</span>
+<span class="n">resultSet</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
 
 <span class="p">}</span>
 </code></pre></div>
 
-<p>```</p>
-</li>
-</ul>
 <h4 id="73">7.3 批量操作</h4>
 <ul>
 <li>
@@ -123,52 +120,48 @@
 <li>
 <p>代码实现：</p>
 </li>
-<li>
-<p>```java
-            @Test
-         public void testBatch() throws Exception {
-             //1.注册驱动
-    //        Class.forName("com.mysql.cj.jdbc.Driver");</p>
-<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="c1">//2.获取连接</span>
-<span class="w">    </span><span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="n">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql:///atguigu?rewriteBatchedStatements=true&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="w">        </span><span class="nd">@Test</span>
+<span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">testBatch</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">//1.注册驱动</span>
+<span class="c1">//        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
 
-<span class="w">    </span><span class="c1">//3.编写SQL语句</span>
-<span class="w">    </span><span class="o">/*</span>
-<span class="w">        </span>注意：<span class="mi">1</span>、必须在连接数据库的<span class="n">URL后面追加</span>?<span class="n">rewriteBatchedStatements</span><span class="p">=</span><span class="n">true</span>，允许批量操作
-<span class="w">            </span><span class="mi">2</span>、新增<span class="n">SQL必须用values</span>。且语句最后不要追加<span class="p">;</span>结束
-<span class="w">            </span><span class="mi">3</span>、调用<span class="n">addBatch</span><span class="p">()</span>方法，将<span class="n">SQL语句进行批量添加操作</span>
-<span class="w">            </span><span class="mi">4</span>、统一执行批量操作，调用<span class="n">executeBatch</span><span class="p">()</span>
-<span class="w">     </span><span class="o">*/</span>
-<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="n">sql</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&quot;insert into t_emp (emp_name,emp_salary,emp_age) values (?,?,?)&quot;</span><span class="p">;</span>
+<span class="c1">//2.获取连接</span>
+<span class="n">Connection</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DriverManager</span><span class="p">.</span><span class="na">getConnection</span><span class="p">(</span><span class="s">&quot;jdbc:mysql:///atguigu?rewriteBatchedStatements=true&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atguigu&quot;</span><span class="p">);</span>
 
-<span class="w">    </span><span class="c1">//4.创建预编译的PreparedStatement，传入SQL语句</span>
-<span class="w">    </span><span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="n">prepareStatement</span><span class="p">(</span><span class="n">sql</span><span class="p">);</span>
+<span class="c1">//3.编写SQL语句</span>
+<span class="cm">/*</span>
+<span class="cm">注意：1、必须在连接数据库的URL后面追加?rewriteBatchedStatements=true，允许批量操作</span>
+<span class="cm">2、新增SQL必须用values。且语句最后不要追加;结束</span>
+<span class="cm">3、调用addBatch()方法，将SQL语句进行批量添加操作</span>
+<span class="cm">4、统一执行批量操作，调用executeBatch()</span>
+<span class="cm">*/</span>
+<span class="n">String</span><span class="w"> </span><span class="n">sql</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;insert into t_emp (emp_name,emp_salary,emp_age) values (?,?,?)&quot;</span><span class="p">;</span>
 
-<span class="w">    </span><span class="c1">//获取当前行代码执行的时间。毫秒值</span>
-<span class="w">    </span><span class="n">long</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">();</span>
-<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="nb">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">10000</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
-<span class="w">        </span><span class="c1">//5.为占位符赋值</span>
-<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;marry&quot;</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
-<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
-<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">setInt</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
+<span class="c1">//4.创建预编译的PreparedStatement，传入SQL语句</span>
+<span class="n">PreparedStatement</span><span class="w"> </span><span class="n">preparedStatement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connection</span><span class="p">.</span><span class="na">prepareStatement</span><span class="p">(</span><span class="n">sql</span><span class="p">);</span>
 
-<span class="w">        </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">addBatch</span><span class="p">();</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="c1">//获取当前行代码执行的时间。毫秒值</span>
+<span class="kt">long</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">();</span>
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">10000</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+<span class="c1">//5.为占位符赋值</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setString</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;marry&quot;</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setDouble</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">setInt</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
 
-<span class="w">    </span><span class="c1">//执行批量操作</span>
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">executeBatch</span><span class="p">();</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">addBatch</span><span class="p">();</span>
+<span class="p">}</span>
 
-<span class="w">    </span><span class="n">long</span><span class="w"> </span><span class="k">end</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">();</span>
+<span class="c1">//执行批量操作</span>
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">executeBatch</span><span class="p">();</span>
 
-<span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="n">out</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;消耗时间：&quot;</span><span class="o">+</span><span class="p">(</span><span class="k">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">));</span>
+<span class="kt">long</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">();</span>
 
-<span class="w">    </span><span class="n">preparedStatement</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
-<span class="w">    </span><span class="n">connection</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;消耗时间：&quot;</span><span class="o">+</span><span class="p">(</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">));</span>
+
+<span class="n">preparedStatement</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
+<span class="n">connection</span><span class="p">.</span><span class="na">close</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div>
-
-<p>```</p>
-</li>
-</ul>
   </div>
 </section>

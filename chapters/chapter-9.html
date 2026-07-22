@@ -12,62 +12,58 @@
 </blockquote>
 <h4 id="92-jdbcv10">9.2 JDBC工具类封装V1.0</h4>
 <ul>
-<li>
-<p>resources/db.properties配置文件：</p>
-</li>
-<li>
-<p><code>properties
-    # druid连接池需要的配置参数，key固定命名
-    driverClassName=com.mysql.cj.jdbc.Driver
-    username=root
-    password=atguigu
-    url=jdbc:mysql:///atguigu</code></p>
-</li>
-<li>
-<p>工具类代码：</p>
-</li>
-<li>
-<p>```java
-    import com.alibaba.druid.pool.DruidDataSourceFactory;</p>
-<p>import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
-/*<em>
-*   JDBC工具类（V1.0）：
-*       1、维护一个连接池对象。
-*       2、对外提供在连接池中获取连接的方法
-*       3、对外提供回收连接的方法
-*   注意：工具类仅对外提供共性的功能代码，所以方法均为静态方法！
-</em>/
-public class JDBCTools {
-    //创建连接池引用，因为要提供给当前项目全局使用，所以创建为静态的。
-    private static DataSource dataSource;
-    //在项目启动时，即创建连接池对象，赋值给dataSource
-    static{
-        try {
-            Properties properties = new Properties();
-            InputStream inputStream =  JDBCTools.getClass().getClassLoader().getSystemResourceAsStream("db.properties");
-            properties.load(inputStream);
-            dataSource = DruidDataSourceFactory.createDataSource(properties);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    //对外提供获取连接的静态方法！
-    public static Connection getConnection() throws SQLException {
-        return ds.getConnection();
-    }
-    //对外提供回收连接的静态方法
-    public static void release(Connection conn) throws SQLException {
-        conn.close();//还给连接池
-    }
-}
-```</p>
-</li>
-<li>
-<p>注意：此种封装方式，无法保证单个请求连接的线程，多次操作数据库时，连接是同一个，无法保证事务！</p>
-</li>
+<li>resources/db.properties配置文件：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="c1"># druid连接池需要的配置参数，key固定命名</span>
+<span class="na">driverClassName</span><span class="o">=</span><span class="s">com.mysql.cj.jdbc.Driver</span>
+<span class="na">username</span><span class="o">=</span><span class="s">root</span>
+<span class="na">password</span><span class="o">=</span><span class="s">atguigu</span>
+<span class="na">url</span><span class="o">=</span><span class="s">jdbc:mysql:///atguigu</span>
+</code></pre></div>
+
+<ul>
+<li>工具类代码：</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">com.alibaba.druid.pool.DruidDataSourceFactory</span><span class="p">;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">javax.sql.DataSource</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.sql.Connection</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.sql.SQLException</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Properties</span><span class="p">;</span>
+<span class="cm">/**</span>
+<span class="cm">*   JDBC工具类（V1.0）：</span>
+<span class="cm">*       1、维护一个连接池对象。</span>
+<span class="cm">*       2、对外提供在连接池中获取连接的方法</span>
+<span class="cm">*       3、对外提供回收连接的方法</span>
+<span class="cm">*   注意：工具类仅对外提供共性的功能代码，所以方法均为静态方法！</span>
+<span class="cm">*/</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JDBCTools</span><span class="w"> </span><span class="p">{</span>
+<span class="c1">//创建连接池引用，因为要提供给当前项目全局使用，所以创建为静态的。</span>
+<span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">;</span>
+<span class="c1">//在项目启动时，即创建连接池对象，赋值给dataSource</span>
+<span class="kd">static</span><span class="p">{</span>
+<span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="n">Properties</span><span class="w"> </span><span class="n">properties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Properties</span><span class="p">();</span>
+<span class="n">InputStream</span><span class="w"> </span><span class="n">inputStream</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">JDBCTools</span><span class="p">.</span><span class="na">getClass</span><span class="p">().</span><span class="na">getClassLoader</span><span class="p">().</span><span class="na">getSystemResourceAsStream</span><span class="p">(</span><span class="s">&quot;db.properties&quot;</span><span class="p">);</span>
+<span class="n">properties</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">inputStream</span><span class="p">);</span>
+<span class="n">dataSource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DruidDataSourceFactory</span><span class="p">.</span><span class="na">createDataSource</span><span class="p">(</span><span class="n">properties</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="n">e</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="p">}</span>
+<span class="w">    </span><span class="c1">//对外提供获取连接的静态方法！</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Connection</span><span class="w"> </span><span class="nf">getConnection</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="k">return</span><span class="w"> </span><span class="n">ds</span><span class="p">.</span><span class="na">getConnection</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="w">    </span><span class="c1">//对外提供回收连接的静态方法</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">release</span><span class="p">(</span><span class="n">Connection</span><span class="w"> </span><span class="n">conn</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">SQLException</span><span class="w"> </span><span class="p">{</span>
+<span class="n">conn</span><span class="p">.</span><span class="na">close</span><span class="p">();</span><span class="c1">//还给连接池</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<ul>
+<li>注意：此种封装方式，无法保证单个请求连接的线程，多次操作数据库时，连接是同一个，无法保证事务！</li>
 </ul>
 <h4 id="93-threadlocal">9.3 ThreadLocal</h4>
 <blockquote>
