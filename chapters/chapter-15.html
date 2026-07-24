@@ -1,0 +1,23 @@
+<section class="chapter" id="chapter-15" data-chapter="15">
+  <h1>配置文件</h1>
+  <div class="chapter-content">
+<p><strong>数据库连接配置与连接池属性文件</strong></p>
+<h3 id="resourcesdbproperties">resources/db.properties</h3>
+<div class="codehilite"><pre><span></span><code>driverClassName=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql:///sys
+username=root
+password=yi2009rui
+initialSize=10
+maxActive=20
+</code></pre></div>
+
+<h3 id="resourceshikariproperties">resources/hikari.properties</h3>
+<div class="codehilite"><pre><span></span><code>driverClassName=com.mysql.cj.jdbc.Driver
+jdbcUrl=jdbc:mysql:///atguigu
+username=root
+password=atguigu
+minimumIdle=10
+maximumPoolSize=20
+</code></pre></div>
+  </div>
+</section>
